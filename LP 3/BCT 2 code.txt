@@ -1,0 +1,30 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract BankAccount {
+    mapping(address => uint256) public balances;
+
+    // Deposit money into sender's account
+    function deposit() public payable {
+        require(msg.value > 0, "Deposit must be > 0");
+        balances[msg.sender] += msg.value;
+    }
+
+    // Withdraw money from sender's account
+    function withdraw(uint256 amount) public {
+        require(amount > 0, "Withdrawal must be > 0");
+        require(balances[msg.sender] >= amount, "Insufficient balance");
+
+        // Update state before external transfer (prevents reentrancy)
+        balances[msg.sender] -= amount;
+
+        // Modern, secure Ether transfer
+        (bool sent, ) = payable(msg.sender).call{value: amount}("");
+        require(sent, "Failed to send Ether");
+    }
+
+    // Show balance of the caller
+    function showBalance() public view returns (uint256) {
+        return balances[msg.sender];
+    }
+}

@@ -1,0 +1,45 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract StudentData {
+    // 1. Structure definition
+    struct Student {
+        uint256 rollNo;
+        string name;
+    }
+
+    // 2. Dynamic Array of Structures
+    Student[] public students;
+
+    // Events to track actions and gas usage in transaction logs
+    event StudentAdded(uint256 indexed rollNo, string name);
+    event FallbackCalled(address sender, uint256 amount, bytes data);
+
+    // Add a student record to the dynamic array
+    function addStudent(uint256 _rollNo, string memory _name) public {
+        students.push(Student(_rollNo, _name));
+        emit StudentAdded(_rollNo, _name);
+    }
+
+    // Return the total count of students stored
+    function getStudentCount() public view returns (uint256) {
+        return students.length;
+    }
+
+    // Return specific student details by array index
+    function getStudent(uint256 index) public view returns (uint256, string memory) {
+        require(index < students.length, "Invalid student index");
+        Student memory s = students[index];
+        return (s.rollNo, s.name);
+    }
+
+    // 3. Fallback & Receive functions
+    // Triggered when someone sends Ether directly or calls an invalid/non-existent function
+    fallback() external payable {
+        emit FallbackCalled(msg.sender, msg.value, msg.data);
+    }
+
+    receive() external payable {
+        emit FallbackCalled(msg.sender, msg.value, "");
+    }
+}
